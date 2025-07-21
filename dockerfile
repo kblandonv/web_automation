@@ -15,7 +15,6 @@ RUN apt-get update && apt-get install -y \
     libgconf-2-4 \
   && rm -rf /var/lib/apt/lists/*
 
-# Variables para detectar binario y driver dentro del contenedor
 ENV CHROME_BIN=/usr/bin/chromium
 ENV CHROMEDRIVER_PATH=/usr/bin/chromedriver
 
@@ -25,11 +24,13 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copia el código de la aplicación
+# Copia el código de la aplicación y el script de arranque
 COPY . .
+COPY start.sh /app/start.sh
+RUN chmod +x /app/start.sh
 
-# Expone el puerto interno en el que corre Uvicorn
+# Expone el puerto interno
 EXPOSE 8000
 
-# Arranca Uvicorn escuchando siempre en 0.0.0.0:8000
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--log-level", "info"]
+# Usa el script para arrancar
+CMD ["/app/start.sh"]
