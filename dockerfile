@@ -1,8 +1,6 @@
-# Dockerfile
-
 FROM python:3.10-slim
 
-# 1) Instala Chromium, Chromium-Driver y librerías necesarias
+# 1) Instala Chromium, Chromium-Driver y librerías headless
 RUN apt-get update && apt-get install -y \
     chromium \
     chromium-driver \
@@ -23,27 +21,32 @@ RUN apt-get update && apt-get install -y \
     xdg-utils \
     libnss3 \
     libgconf-2-4 \
-  && \
-  # Crea un symlink si es necesario (comprueba ruta real del paquete)
-  ln -sf /usr/lib/chromium/chromedriver /usr/bin/chromedriver \
-  && rm -rf /var/lib/apt/lists/*
+  && rm -rf /var/lib/apt/lists/* \
+  # 2) Asegura un symlink válido a /usr/bin/chromedriver
+  && if [ -f /usr/lib/chromium/chromedriver ]; then \
+         ln -sf /usr/lib/chromium/chromedriver /usr/bin/chromedriver; \
+     fi \
+  && if [ -f /usr/lib/chromium-browser/chromedriver ]; then \
+         ln -sf /usr/lib/chromium-browser/chromedriver /usr/bin/chromedriver; \
+     fi
 
-# 2) Variables de entorno
+# 3) Variables para Selenium
 ENV CHROME_BIN=/usr/bin/chromium
 ENV CHROMEDRIVER_PATH=/usr/bin/chromedriver
 
 WORKDIR /app
 
-# 3) Instala dependencias Python
+# 4) Instala dependencias Python
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# 4) Copia el código y start.sh
+# 5) Copia código y script de arranque
 COPY . .
 COPY start.sh /app/start.sh
 RUN chmod +x /app/start.sh
 
+# 6) Expone el puerto interno
 EXPOSE 8000
 
-# 5) Arranca con tu wrapper
+# 7) Arranca con tu wrapper
 CMD ["/app/start.sh"]
