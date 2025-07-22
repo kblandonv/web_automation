@@ -1,0 +1,22 @@
+# Usa Node oficial
+FROM node:18-alpine
+
+# 1) Define el build-arg para inyectar la URL de la API
+ARG REACT_APP_API_URL
+# 2) Expónla como env antes del build
+ENV REACT_APP_API_URL=${REACT_APP_API_URL}
+
+WORKDIR /app
+
+# 3) Copia e instala deps
+COPY package.json ./
+RUN npm install
+
+# 4) Copia el resto y build
+COPY . .
+RUN npm run build
+
+# 5) Sirve la build con serve
+RUN npm install -g serve
+EXPOSE 3000
+CMD ["serve", "-s", "build", "-l", "3000"]
