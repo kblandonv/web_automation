@@ -7,7 +7,8 @@ from selenium.webdriver.chrome.options import Options
 
 def get_driver(headless: bool = True) -> webdriver.Chrome:
     """
-    Inicializa Chrome usando el binario y driver instalados por APT.
+    Inicializa y devuelve un WebDriver de Chrome/Chromium,
+    detectando dinámicamente la ruta del binario en el contenedor.
     """
     options = Options()
     if headless:
@@ -16,10 +17,21 @@ def get_driver(headless: bool = True) -> webdriver.Chrome:
     options.add_argument("--disable-gpu")
     options.add_argument("--no-sandbox")
 
-    # Ruta al ejecutable de Chromium dentro del contenedor
-    options.binary_location = os.getenv("CHROME_BIN", "/usr/bin/chromium")
+    # Lista de posibles rutas al binario de Chrome/Chromium
+    candidates = [
+        os.getenv("CHROME_BIN"),
+        "/usr/bin/chromium-browser",
+        "/usr/bin/chromium",
+        "/usr/bin/google-chrome",
+    ]
+    for path in candidates:
+        if path and os.path.exists(path):
+            options.binary_location = path
+            break
+    else:
+        raise RuntimeError("Chrome binary no encontrado en ninguna ruta conocida")
 
-    # Usa el ChromeDriver del sistema
+    # Usa el driver instalado por APT
     driver_path = os.getenv("CHROMEDRIVER_PATH", "/usr/bin/chromedriver")
     service = Service(driver_path)
 

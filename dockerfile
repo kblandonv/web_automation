@@ -1,6 +1,5 @@
 FROM python:3.10-slim
 
-# 1) Instala Chromium, Chromium-Driver y librerías headless
 RUN apt-get update && apt-get install -y \
     chromium \
     chromium-driver \
@@ -22,28 +21,18 @@ RUN apt-get update && apt-get install -y \
     libnss3 \
     libgconf-2-4 \
   && rm -rf /var/lib/apt/lists/* \
-  \
-  # 2) Asegura symlink a chromedriver y chrome binary
-  && ln -sf /usr/lib/chromium/chromedriver /usr/bin/chromedriver \
-  && ln -sf /usr/bin/chromium-browser /usr/bin/chromium
+  && ln -sf /usr/bin/chromium /usr/bin/chromium-browser \
+  && ln -sf /usr/bin/chromium /usr/bin/google-chrome
 
-# Variables de entorno para Selenium
 ENV CHROME_BIN=/usr/bin/chromium
 ENV CHROMEDRIVER_PATH=/usr/bin/chromedriver
 
 WORKDIR /app
-
-# Instala dependencias de Python
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
-
-# Copia el código y el script de arranque
 COPY . .
 COPY start.sh /app/start.sh
 RUN chmod +x /app/start.sh
 
-# Expone el puerto interno
 EXPOSE 8000
-
-# Arranca con tu wrapper
 CMD ["/app/start.sh"]
