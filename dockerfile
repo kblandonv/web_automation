@@ -22,31 +22,28 @@ RUN apt-get update && apt-get install -y \
     libnss3 \
     libgconf-2-4 \
   && rm -rf /var/lib/apt/lists/* \
-  # 2) Asegura un symlink válido a /usr/bin/chromedriver
-  && if [ -f /usr/lib/chromium/chromedriver ]; then \
-         ln -sf /usr/lib/chromium/chromedriver /usr/bin/chromedriver; \
-     fi \
-  && if [ -f /usr/lib/chromium-browser/chromedriver ]; then \
-         ln -sf /usr/lib/chromium-browser/chromedriver /usr/bin/chromedriver; \
-     fi
+  \
+  # 2) Asegura symlink a chromedriver y chrome binary
+  && ln -sf /usr/lib/chromium/chromedriver /usr/bin/chromedriver \
+  && ln -sf /usr/bin/chromium-browser /usr/bin/chromium
 
-# 3) Variables para Selenium
+# Variables de entorno para Selenium
 ENV CHROME_BIN=/usr/bin/chromium
 ENV CHROMEDRIVER_PATH=/usr/bin/chromedriver
 
 WORKDIR /app
 
-# 4) Instala dependencias Python
+# Instala dependencias de Python
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# 5) Copia código y script de arranque
+# Copia el código y el script de arranque
 COPY . .
 COPY start.sh /app/start.sh
 RUN chmod +x /app/start.sh
 
-# 6) Expone el puerto interno
+# Expone el puerto interno
 EXPOSE 8000
 
-# 7) Arranca con tu wrapper
+# Arranca con tu wrapper
 CMD ["/app/start.sh"]
