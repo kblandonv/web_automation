@@ -12,6 +12,10 @@ from file_manager.pdf_manager import save_pdf_via_cdp
 from file_manager.archive_manager import compress_folder
 from utils.logger import get_logger
 
+@router.get("/health")
+async def health():
+    return {"status": "up"}
+
 router = APIRouter()
 logger = get_logger(__name__)
 
