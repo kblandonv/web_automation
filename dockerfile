@@ -4,14 +4,19 @@ FROM python:3.10-slim
 
 # 1) Pre-requisitos para agregar repositorio de Google
 RUN apt-get update && apt-get install -y \
-    wget \
-    gnupg \
-  && rm -rf /var/lib/apt/lists/*
-
-# 2) Agregar llave y repositorio de Google Chrome
-RUN wget -qO - https://dl.google.com/linux/linux_signing_key.pub | apt-key add - \
+    wget gnupg \
+  && wget -qO - https://dl.google.com/linux/linux_signing_key.pub | apt-key add - \
   && echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" \
-     > /etc/apt/sources.list.d/google-chrome.list
+     > /etc/apt/sources.list.d/google-chrome.list \
+  && apt-get update && apt-get install -y \
+    google-chrome-stable \
+    fonts-liberation \
+    libatk1.0-0 \
+    ... (tus libs) ... \
+  && rm -rf /var/lib/apt/lists/* \
+  \
+  # symlink para que selenium lo encuentre como google-chrome
+  && ln -sf /usr/bin/google-chrome-stable /usr/bin/google-chrome
 
 # 3) Instalar Google Chrome Stable y librerías necesarias para headless
 RUN apt-get update && apt-get install -y \

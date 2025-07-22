@@ -17,23 +17,29 @@ def get_driver(headless: bool = True) -> webdriver.Chrome:
     options.add_argument("--disable-gpu")
     options.add_argument("--no-sandbox")
 
-    # Lista de posibles rutas al binario de Chrome/Chromium
+    # Rutas donde buscar el binario de Chrome/Chromium
     candidates = [
         os.getenv("CHROME_BIN"),
-        "/usr/bin/chromium-browser",
-        "/usr/bin/chromium",
         "/usr/bin/google-chrome",
+        "/usr/bin/google-chrome-stable",
+        "/usr/bin/chromium",
+        "/usr/bin/chromium-browser",
     ]
-    for path in candidates:
-        if path and os.path.exists(path):
-            options.binary_location = path
+    for p in candidates:
+        if p and os.path.exists(p):
+            options.binary_location = p
             break
     else:
-        raise RuntimeError("Chrome binary no encontrado en ninguna ruta conocida")
+        raise RuntimeError(
+            f"Chrome binary no encontrado en rutas: {candidates}"
+        )
 
-    # Usa el driver instalado por APT
-    driver_path = os.getenv("CHROMEDRIVER_PATH", "/usr/bin/chromedriver")
-    service = Service(driver_path)
+    # Como usas webdriver-manager, Selenium Manager o el driver de apt
+    # Si prefieres webdriver-manager:
+    from webdriver_manager.chrome import ChromeDriverManager
+    service = Service(ChromeDriverManager().install())
+    # O, si quieres usar el chromedriver de apt:
+    # service = Service(os.getenv("CHROMEDRIVER_PATH", "/usr/bin/chromedriver"))
 
     driver = webdriver.Chrome(service=service, options=options)
     return driver
